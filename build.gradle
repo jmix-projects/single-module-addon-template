@@ -1,0 +1,64 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath "io.jmix.gradle:jmix-gradle-plugin:0.9.2"
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.jmix'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url 'https://nexus.jmix.io/repository/public'
+        }
+    }
+
+    jmix {
+        bomVersion = '1.0.0-SNAPSHOT'
+        projectId = 'addon'
+    }
+
+    group = 'com.company.addon'
+    version = '0.0.1-SNAPSHOT'
+
+    sourceCompatibility = '1.8'
+
+    java {
+        withSourcesJar()
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+
+    publishing {
+        repositories {
+            maven {
+                url = 'https://myrepo/releases/'
+                credentials {
+                    username rootProject.hasProperty('uploadUser') ? rootProject['uploadUser'] : 'admin'
+                    password rootProject.hasProperty('uploadPassword') ? rootProject['uploadPassword'] : 'admin'
+                }
+                allowInsecureProtocol = true
+            }
+        }
+        publications {
+            javaMaven(MavenPublication) {
+                artifactId = archivesBaseName
+                from components.java
+            }
+        }
+    }
+
+    // remove after https://youtrack.jetbrains.com/issue/IDEA-227215 is fixed
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+}
